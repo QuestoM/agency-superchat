@@ -1,382 +1,329 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agency SuperChat</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #6200ea;
-            --secondary-color: #3700b3;
-            --background-color: #121212;
-            --surface-color: #1e1e1e;
-            --text-color: #ffffff;
-            --chat-bg: #2d2d2d;
-            --user-message-bg: #3700b3;
-            --ai-message-bg: #1e1e1e;
-            --sidebar-text: #ffffff;
-        }
-        
-        body {
-            font-family: 'Roboto', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            transition: all 0.3s ease;
-        }
-        
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 0;
-        }
-        
-        header {
-            background-color: var(--surface-color);
-            color: var(--text-color);
-            text-align: center;
-            padding: 20px 0;
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            margin: 0;
-            font-size: 2em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 60px);
-            background-color: var(--chat-bg);
-            overflow: hidden;
-        }
-        
-        .sidebar {
-            background-color: var(--surface-color);
-            color: var(--sidebar-text);
-            padding: 20px;
-            overflow-y: auto;
-            max-height: 30vh;
-        }
-        
-        .main-chat {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--chat-bg);
-            overflow: hidden;
-        }
-        
-        .character-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .character-list li {
-            cursor: pointer;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .character-list li:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .character-list li .edit-btn {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            font-size: 14px;
-            opacity: 0.7;
-            transition: opacity 0.3s ease;
-        }
-        
-        .character-list li .edit-btn:hover {
-            opacity: 1;
-        }
-        
-        .new-character-btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .new-character-btn:hover {
-            background-color: var(--secondary-color);
-        }
-        
-        .chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .message {
-            margin-bottom: 15px;
-            padding: 12px;
-            border-radius: 15px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        
-        .user-message {
-            background-color: var(--user-message-bg);
-            color: var(--text-color);
-            align-self: flex-end;
-            margin-left: auto;
-        }
-        
-        .ai-message {
-            background-color: var(--ai-message-bg);
-            color: var(--text-color);
-            align-self: flex-start;
-        }
-        
-        .chat-input {
-            display: flex;
-            gap: 10px;
-            padding: 10px;
-            background-color: var(--surface-color);
-        }
-        
-        .chat-input input {
-            flex-grow: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            background-color: var(--chat-bg);
-            color: var(--text-color);
-        }
-        
-        .chat-input button {
-            padding: 12px 24px;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .chat-input button:hover {
-            background-color: var(--secondary-color);
-        }
-        
-        .settings-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: var(--text-color);
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .settings-btn:hover {
-            transform: rotate(180deg);
-        }
-        
-        .clear-chat-btn {
-            background-color: #e74c3c;
-            color: var(--text-color);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .clear-chat-btn:hover {
-            background-color: #c0392b;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: var(--surface-color);
-            color: var(--text-color);
-            margin: 10% auto;
-            padding: 25px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 15px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
-        }
-        
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .close:hover {
-            color: var(--text-color);
-        }
-        
-        .theme-selector {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-        
-        .theme-option {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .theme-option:hover {
-            transform: scale(1.2);
-        }
-        
-        .theme-option.active {
-            border-color: var(--text-color);
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-        
-        .controls button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-        }
-        
-        .controls button:hover {
-            background-color: var(--secondary-color);
-        }
-        
-        #fileInput {
-            display: none;
-        }
-        
-        .model-selector {
-            margin-top: 20px;
-        }
-        
-        .model-selector select {
-            width: 100%;
-            padding: 10px;
-            background-color: var(--surface-color);
-            color: var(--text-color);
-            border: 1px solid var(--text-color);
-            border-radius: 5px;
-        }
-        
-        .collaboration-room {
-            display: none;
-            background-color: var(--surface-color);
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-        }
-        
-        .collaboration-room h2 {
-            color: var(--text-color);
-            margin-bottom: 15px;
-        }
-        
-        .collaboration-chat {
-            height: 300px;
-            overflow-y: auto;
-            background-color: var(--chat-bg);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .collaboration-input {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .collaboration-input input {
-            flex-grow: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            background-color: var(--chat-bg);
-            color: var(--text-color);
-        }
-        
-        .collaboration-input button {
-            padding: 12px 24px;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .collaboration-input button:hover {
-            background-color: var(--secondary-color);
-        }
-        
-        @media (min-width: 768px) {
-            .chat-container {
-                flex-direction: row;
-            }
-        
-            .sidebar {
-                width: 250px;
-                max-height: none;
-            }
-        
-            .main-chat {
-                flex-grow: 1;
-            }
-        }
-        </style>
+<html><head><base href="https://coolioai.com/superchat/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperChat - Talk to Agency Functions</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+    --primary-color: #6200ea;
+    --secondary-color: #3700b3;
+    --background-color: #121212;
+    --surface-color: #1e1e1e;
+    --text-color: #ffffff;
+    --chat-bg: #2d2d2d;
+    --user-message-bg: #3700b3;
+    --ai-message-bg: #1e1e1e;
+    --sidebar-text: #ffffff;
+}
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+}
+
+header {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    text-align: center;
+    padding: 20px 0;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+h1 {
+    margin: 0;
+    font-size: 2em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px);
+    background-color: var(--chat-bg);
+    overflow: hidden;
+}
+
+.sidebar {
+    background-color: var(--surface-color);
+    color: var(--sidebar-text);
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 30vh;
+}
+
+.main-chat {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--chat-bg);
+    overflow: hidden;
+}
+
+.character-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.character-list li {
+    cursor: pointer;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.character-list li:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.character-list li .edit-btn {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.character-list li .edit-btn:hover {
+    opacity: 1;
+}
+
+.new-character-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+}
+
+.new-character-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 12px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.user-message {
+    background-color: var(--user-message-bg);
+    color: var(--text-color);
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.ai-message {
+    background-color: var(--ai-message-bg);
+    color: var(--text-color);
+    align-self: flex-start;
+}
+
+.chat-input {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background-color: var(--surface-color);
+}
+
+.chat-input input {
+    flex-grow: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    background-color: var(--chat-bg);
+    color: var(--text-color);
+}
+
+.chat-input button {
+    padding: 12px 24px;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.chat-input button:hover {
+    background-color: var(--secondary-color);
+}
+
+.settings-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.settings-btn:hover {
+    transform: rotate(180deg);
+}
+
+.clear-chat-btn {
+    background-color: #e74c3c;
+    color: var(--text-color);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clear-chat-btn:hover {
+    background-color: #c0392b;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    margin: 10% auto;
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--text-color);
+}
+
+.theme-selector {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.theme-option {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.theme-option:hover {
+    transform: scale(1.2);
+}
+
+.theme-option.active {
+    border-color: var(--text-color);
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.controls button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+.controls button:hover {
+    background-color: var(--secondary-color);
+}
+
+#fileInput {
+    display: none;
+}
+
+.model-selector {
+    margin-top: 20px;
+}
+
+.model-selector select {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+}
+
+@media (min-width: 768px) {
+    .chat-container {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 250px;
+        max-height: none;
+    }
+
+    .main-chat {
+        flex-grow: 1;
+    }
+}
+</style>
 </head>
 <body>
 <div class="container">
@@ -402,7 +349,6 @@
                 <li data-character="Project Manager">Project Manager <button class="edit-btn">Edit</button></li>
             </ul>
             <button class="new-character-btn" id="newCharacterBtn">New Function</button>
-            <button class="new-character-btn" id="collaborationRoomBtn">Collaboration Room</button>
         </div>
         <div class="main-chat">
             <div class="controls">
@@ -443,11 +389,11 @@
         <div class="model-selector">
             <h3>Select AI Model</h3>
             <select id="modelSelect">
-                <option value="sonnet-3.5">Sonnet 3.5</option>
                 <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                 <option value="gpt-4">GPT-4</option>
                 <option value="claude-v1">Claude v1</option>
                 <option value="claude-instant-v1">Claude Instant v1</option>
+                <option value="sonnet-3.5">Sonnet 3.5</option>
             </select>
         </div>
         <div class="theme-selector">
@@ -484,18 +430,6 @@
     </div>
 </div>
 
-<div id="collaborationRoomModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Collaboration Room</h2>
-        <div class="collaboration-chat" id="collaborationChat"></div>
-        <div class="collaboration-input">
-            <input type="text" id="collaborationInput" placeholder="Enter your task...">
-            <button id="collaborationSendBtn">Send</button>
-        </div>
-    </div>
-</div>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js"></script>
 <script>
@@ -507,72 +441,54 @@ $(document).ready(function() {
         useMarkdown: false,
         useAutoComplete: false,
         fontSize: 16,
-        model: 'sonnet-3.5'
+        model: 'gpt-3.5-turbo'
     };
-
-    const API_KEY = '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';
 
     const md = window.markdownit();
 
     // Default character descriptions
     const defaultCharacters = {
-        "Creative Director": "Leads the creative vision for all agency projects, ensuring high-quality and innovative outputs. Respond in Hebrew.",
-        "Art Director": "Oversees visual aspects of advertising and marketing materials, guiding the overall look of campaigns. Respond in Hebrew.",
-        "Copywriter": "Crafts compelling written content for various media, including ads, websites, and marketing materials. Respond in Hebrew.",
-        "Account Manager": "Acts as the primary liaison between clients and the agency, managing relationships and project flow. Respond in Hebrew.",
-        "Digital Strategist": "Develops comprehensive online marketing strategies to achieve client goals across digital platforms. Respond in Hebrew.",
-        "Social Media Manager": "Creates and executes social media campaigns, managing brand presence across various platforms. Respond in Hebrew.",
-        "SEO Specialist": "Optimizes website content and structure to improve search engine rankings and organic traffic. Respond in Hebrew.",
-        "PPC Specialist": "Manages paid search and display advertising campaigns to drive targeted traffic and conversions. Respond in Hebrew.",
-        "UX/UI Designer": "Designs user-friendly interfaces and experiences for websites and digital applications. Respond in Hebrew.",
-        "Web Developer": "Builds and maintains websites, ensuring functionality, performance, and compatibility. Respond in Hebrew.",
-        "Data Analyst": "Interprets complex data sets to provide insights and guide marketing decisions. Respond in Hebrew.",
-        "Project Manager": "Coordinates team efforts, timelines, and resources to ensure successful project completion. Respond in Hebrew."
-        };
+        "Creative Director": "Leads the creative vision for all agency projects, ensuring high-quality and innovative outputs.",
+        "Art Director": "Oversees visual aspects of advertising and marketing materials, guiding the overall look of campaigns.",
+        "Copywriter": "Crafts compelling written content for various media, including ads, websites, and marketing materials.",
+        "Account Manager": "Acts as the primary liaison between clients and the agency, managing relationships and project flow.",
+        "Digital Strategist": "Develops comprehensive online marketing strategies to achieve client goals across digital platforms.",
+        "Social Media Manager": "Creates and executes social media campaigns, managing brand presence across various platforms.",
+        "SEO Specialist": "Optimizes website content and structure to improve search engine rankings and organic traffic.",
+        "PPC Specialist": "Manages paid search and display advertising campaigns to drive targeted traffic and conversions.",
+        "UX/UI Designer": "Designs user-friendly interfaces and experiences for websites and digital applications.",
+        "Web Developer": "Builds and maintains websites, ensuring functionality, performance, and compatibility.",
+        "Data Analyst": "Interprets complex data sets to provide insights and guide marketing decisions.",
+        "Project Manager": "Coordinates team efforts, timelines, and resources to ensure successful project completion."
+    };
 
-        function sendMessage() {
-            const message = $('#messageInput').val().trim();
-            if (message && currentCharacter) {
-                displayMessage(message, 'user');
-                $('#messageInput').val('');
+    function sendMessage() {
+        const message = $('#messageInput').val().trim();
+        if (message && currentCharacter) {
+            displayMessage(message, 'user');
+            $('#messageInput').val('');
 
-                $.ajax({
-                    url: 'https://api.anthropic.com/v1/messages',
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': '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'
-                    },
-                    data: JSON.stringify({
-                        model: settings.model,
-                        messages: [
-                            {
-                                role: "system",
-                                content: `You are ${currentCharacter}. ${currentCharacterBio}`
-                            },
-                            {
-                                role: "user",
-                                content: message
-                            }
-                        ],
-                        max_tokens: 300
-                    }),
-                    success: function(response) {
-                        if (response && response.content && response.content.length > 0) {
-                            displayMessage(response.content[0].text, 'ai');
-                        } else {
-                            console.error("Unexpected response format:", response);
-                            displayMessage("Sorry, there was an error processing your request. (Unexpected response format)", 'ai');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("API Error:", xhr.responseText);
-                        displayMessage("Sorry, there was an error processing your request. Error details: " + xhr.responseText, 'ai');
-                    }
-                });
-            }
+            $.ajax({
+                url: '/api/cooliochat',
+                method: 'POST',
+                data: JSON.stringify({
+                    character: currentCharacter,
+                    characterBio: currentCharacterBio,
+                    message: message,
+                    rememberChats: settings.rememberChats,
+                    model: settings.model
+                }),
+                contentType: 'application/json',
+                success: function(response) {
+                    displayMessage(response.reply, 'ai');
+                },
+                error: function() {
+                    displayMessage("Sorry, there was an error processing your request.", 'ai');
+                }
+            });
         }
-        
+    }
+
     function displayMessage(message, sender) {
         if (settings.useMarkdown) {
             message = md.render(message);
@@ -687,6 +603,7 @@ $(document).ready(function() {
     $('#clearChatBtn').click(function() {
         if (confirm('Are you sure you want to clear the chat?')) {
             $('#chatMessages').empty();
+            // Here you would also send a request to clear the chat history on the server
         }
     });
 
@@ -826,76 +743,6 @@ $(document).ready(function() {
                 $('#chatMessages').html(e.target.result);
             };
             reader.readAsText(file);
-        }
-    });
-
-    // Collaboration Room functionality
-    $('#collaborationRoomBtn').click(function() {
-        $('#collaborationRoomModal').show();
-    });
-
-    function displayCollaborationMessage(message, sender) {
-        const messageElement = $('<div>').addClass('message').addClass(sender + '-message').text(message);
-        $('#collaborationChat').append(messageElement);
-        $('#collaborationChat').scrollTop($('#collaborationChat')[0].scrollHeight);
-    }
-
-    function sendCollaborationMessage() {
-        const message = $('#collaborationInput').val().trim();
-        if (message) {
-            displayCollaborationMessage(message, 'user');
-            $('#collaborationInput').val('');
-
-            const activeCharacters = getActiveCharacters();
-            let systemPrompt = "You are a coordinating AI that manages tasks and communication between different agency roles. ";
-            systemPrompt += "The active roles are: " + activeCharacters.join(", ") + ". ";
-            systemPrompt += "Analyze the task, identify which roles are needed, assign relevant parts to each role, and provide a final integrated response.";
-
-            $.ajax({
-                url: '/api/cooliochat',
-                method: 'POST',
-                data: JSON.stringify({
-                    character: "Coordinator",
-                    characterBio: systemPrompt,
-                    message: message,
-                    rememberChats: settings.rememberChats,
-                    model: settings.model
-                }),
-                contentType: 'application/json',
-                success: function(response) {
-                    if (response && response.reply) {
-                        displayCollaborationMessage(response.reply, 'ai');
-                    } else {
-                        console.error("Unexpected response format:", response);
-                        displayCollaborationMessage("Sorry, there was an error processing your request. (Unexpected response format)", 'ai');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error("API Error:", xhr.responseText);
-                    displayCollaborationMessage("Sorry, there was an error processing your request. Error details: " + error, 'ai');
-                }
-            });
-        }
-    }
-
-    function displayCollaborationMessage(message, sender) {
-        const messageElement = $('<div>').addClass('message').addClass(sender + '-message').text(message);
-        $('#collaborationChat').append(messageElement);
-        $('#collaborationChat').scrollTop($('#collaborationChat')[0].scrollHeight);
-    }
-
-    function getActiveCharacters() {
-        return $('.character-list li.active').map(function() {
-            return $(this).data('character');
-        }).get();
-    }
-
-    $('#collaborationSendBtn').click(sendCollaborationMessage);
-
-    $('#collaborationInput').keypress(function(e) {
-        if (e.which == 13) {
-            sendCollaborationMessage();
-            return false;
         }
     });
 

@@ -66,7 +66,7 @@ function LogViewer({ isOpen, onClose, logs }) {
             <LogTitle>Request:</LogTitle>
             <LogText>{JSON.stringify(log.request, null, 2)}</LogText>
             <LogTitle>Character (System Prompt):</LogTitle>
-            <LogText>{log.request.character || "Not provided"}</LogText>
+            <LogText>{log.request.system || "Not provided"}</LogText>
             <LogTitle>Max Tokens:</LogTitle>
             <LogText>{log.request.maxTokens || "Default (1024)"}</LogText>
             <LogTitle>Temperature:</LogTitle>

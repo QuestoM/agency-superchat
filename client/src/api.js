@@ -8,10 +8,10 @@ export const testServerConnection = async () => {
 
 export const sendMessage = async (message, settings) => {
   try {
-    console.log('Sending message:', message, 'Settings:', settings);
+    console.log('Sending to server:', { message, ...settings });
     const response = await axios.post(`${API_BASE_URL}/chat`, {
       message,
-      character: settings.character,
+      system: settings.system,
       maxTokens: settings.maxTokens,
       temperature: settings.temperature
     });

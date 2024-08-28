@@ -211,6 +211,12 @@ function ChatWindow() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLogViewerOpen, setIsLogViewerOpen] = useState(false);
   const [logs, setLogs] = useState([]);
+  const [isNewConversation, setIsNewConversation] = useState(true);
+
+  useEffect(() => {
+    // Reset isNewConversation when the character changes
+    setIsNewConversation(true);
+  }, [currentCharacter]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -220,17 +226,23 @@ function ChatWindow() {
 
   const handleSendMessage = async (message) => {
     const currentSettings = {
-      character: currentCharacter?.systemPrompt,
-      maxTokens: settings?.maxTokens,
-      temperature: settings?.temperature
+      system: isNewConversation ? currentCharacter?.systemPrompt : undefined,
+      maxTokens: settings?.maxTokens || 1024,
+      temperature: settings?.temperature || 0.7
     };
     
+    console.log('Sending to server:', { message, ...currentSettings });
+
+    // Add the user's message immediately
+    setMessages(prevMessages => [...prevMessages, { text: message, isUser: true }]);
+
     try {
       setIsLoading(true);
       const response = await sendMessage(message, currentSettings);
       console.log('Response from server:', response);
       if (response && response.reply) {
-        setMessages(prevMessages => [...prevMessages, { text: message, isUser: true }, { text: response.reply, isUser: false }]);
+        setMessages(prevMessages => [...prevMessages, { text: response.reply, isUser: false }]);
+        setIsNewConversation(false);
       } else {
         throw new Error('Invalid response from server');
       }

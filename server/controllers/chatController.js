@@ -6,23 +6,27 @@ const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
 exports.sendMessage = async (req, res) => {
   try {
-    const { message, conversationId, character, maxTokens, temperature } = req.body;
-    console.log('Received message:', message);
-    console.log('Character (System Prompt):', character);
-    console.log('Max Tokens:', maxTokens);
-    console.log('Temperature:', temperature);
+    const { message, system, maxTokens, temperature } = req.body;
+    console.log('Received from client:', { message, system, maxTokens, temperature });
+
+    const messages = [];
+    if (system) {
+      messages.push({ role: "system", content: system });
+    }
+    messages.push({ role: "user", content: message });
+
+    const requestBody = {
+      model: "claude-3-5-sonnet-20240620",
+      max_tokens: maxTokens || 1024,
+      temperature: temperature || 0.7,
+      messages: messages
+    };
+
+    console.log('Sending to Anthropic:', requestBody);
 
     const response = await axios.post(
       ANTHROPIC_API_URL,
-      {
-        model: "claude-3-5-sonnet-20240620",
-        max_tokens: maxTokens || 1024,
-        temperature: temperature || 0.7,
-        messages: [
-          { role: "system", content: character },
-          { role: "user", content: message }
-        ]
-      },
+      requestBody,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -31,6 +35,8 @@ exports.sendMessage = async (req, res) => {
         }
       }
     );
+
+    console.log('Anthropic response:', response.data);
 
     const aiResponse = response.data.content[0].text;
 
@@ -41,7 +47,7 @@ exports.sendMessage = async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
-    console.log('Sending response:', formattedResponse);
+    console.log('Sending to client:', formattedResponse);
     res.json(formattedResponse);
   } catch (error) {
     console.error('Error in sendMessage:', error);

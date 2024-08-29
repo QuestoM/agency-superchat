@@ -14,6 +14,7 @@ export const sendMessage = async (req: Request, res: Response) => {
     const messages = [];
     if (system) {
       messages.push({ role: "system", content: system });
+      console.log('System prompt:', system);  // Added log
     }
     messages.push({ role: "user", content: message });
 
@@ -24,7 +25,7 @@ export const sendMessage = async (req: Request, res: Response) => {
       messages: messages
     });
 
-    console.log('Anthropic response:', msg);
+    console.log('Anthropic response:', msg);  // Added log
 
     const formattedResponse = {
       reply: msg.content[0].text,

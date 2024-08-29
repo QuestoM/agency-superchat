@@ -12,6 +12,7 @@ exports.sendMessage = async (req, res) => {
     const messages = [];
     if (system) {
       messages.push({ role: "system", content: system });
+      console.log('System prompt:', system);  // Added log
     }
     messages.push({ role: "user", content: message });
 
@@ -36,7 +37,7 @@ exports.sendMessage = async (req, res) => {
       }
     );
 
-    console.log('Anthropic response:', response.data);
+    console.log('Anthropic response:', response.data);  // Added log
 
     const aiResponse = response.data.content[0].text;
 
